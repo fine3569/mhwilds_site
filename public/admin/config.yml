@@ -1,0 +1,18 @@
+backend:
+  name: github
+  repo: your-github-username/your-repo-name
+  branch: main
+
+media_folder: "public/uploads"
+public_folder: "/uploads"
+
+collections:
+  - name: "skills"
+    label: "スキル検証記事"
+    folder: "content/skills"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "タイトル", name: "title", widget: "string" }
+      - { label: "日付",     name: "date",  widget: "datetime" }
+      - { label: "本文",     name: "body",  widget: "markdown" }
