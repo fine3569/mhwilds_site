@@ -176,7 +176,7 @@ export default function ArticleManagerPage() {
           {editingSlug ? '記事を編集' : '記事を管理'}
         </Typography>
         <Grid container spacing={2}>
-          <Grid item size={6}>
+          <Grid item xs={6}>
             <Paper sx={{ p: 3, mb: 4, h: 12 }} elevation={1}>
               <Box component="form" noValidate autoComplete="off" sx={{ display: 'grid', gap: 2 }}>
                 <TextField
@@ -230,7 +230,7 @@ export default function ArticleManagerPage() {
             </Paper>
           </Grid>
 
-          <Grid item size={6}>
+          <Grid item xs={6}>
             <Paper sx={{ p: 2 }} variant="outlined">
               <Typography variant="h6" gutterBottom>
                 プレビュー
