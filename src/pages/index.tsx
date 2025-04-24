@@ -4,45 +4,63 @@ import path from 'path';
 import matter from 'gray-matter';
 import { GetStaticProps } from 'next';
 import { Layout } from '../components/Layout';
-import { ArticleCard } from '../components/ArticleCard';
-import { Box, Card, CardActionArea, CardContent, Container, Grid, Link, Typography } from '@mui/material';
+import Box from '@mui/material/Box';
+import Card from '@mui/material/Card';
+import CardActionArea from '@mui/material/CardActionArea';
+import CardContent from '@mui/material/CardContent';
+import Container from '@mui/material/Container';
+import Link from '@mui/material/Link';
+import Typography from '@mui/material/Typography';
 
-type Post = { slug: string; title: string; excerpt: string; date: string };
+type Post = {
+  slug: string;
+  title: string;
+  excerpt: string;
+  date: string;
+};
 
 export const getStaticProps: GetStaticProps = async () => {
-  const files = fs.readdirSync(path.join(process.cwd(), 'src/content/articles'));
-  const posts: Post[] = files.map(filename => {
-    const mdWithMeta = fs.readFileSync(path.join('src/content/articles', filename), 'utf-8');
-    const { data, content } = matter(mdWithMeta);
+  const dir = path.join(process.cwd(), 'src/content/articles');
+  const files = fs.readdirSync(dir);
+
+  const posts: Post[] = files.map((filename) => {
+    const raw = fs.readFileSync(path.join(dir, filename), 'utf-8');
+    const { data, content } = matter(raw);
     return {
       slug: filename.replace(/\.mdx?$/, ''),
       title: data.title,
       excerpt: content.slice(0, 120) + '…',
-      date: data.date
+      date: data.date,
     };
   });
+
   // 日付降順ソート
   posts.sort((a, b) => (a.date < b.date ? 1 : -1));
+
   return { props: { posts } };
 };
 
 const HomePage: React.FC<{ posts: Post[] }> = ({ posts }) => (
   <Layout>
     {/* ヒーローセクション */}
-    <Container maxWidth="md">
+    <Container maxWidth="md" sx={{ mb: 6 }}>
       <Box
-          sx={{
-            bgcolor: 'HeroSection',
-            py: { xs: 3, md: 6 },
-            px: { xs: 2, md: 3 },
-            mb: 6,
-            textAlign: 'center',
-            borderRadius: 1,
-            boxShadow: 1,
-          }}
+        sx={{
+          bgcolor: 'HeroSection',
+          py: { xs: 3, md: 6 },
+          px: { xs: 2, md: 3 },
+          borderRadius: 1,
+          boxShadow: 1,
+          textAlign: 'center',
+        }}
+      >
+        <Typography
+          variant="h4"
+          component="h1"
+          gutterBottom
+          sx={{ fontWeight: 600 }}
         >
-        <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 600 }}>
-        MHWilds 個人的攻略まとめへようこそ
+          MHWilds 個人的攻略まとめへようこそ
         </Typography>
         <Typography variant="body1" sx={{ maxWidth: 600, mx: 'auto' }}>
           当サイトでは、MHWildsのスキル効果などについての情報をまとめています。
@@ -50,7 +68,10 @@ const HomePage: React.FC<{ posts: Post[] }> = ({ posts }) => (
         <Typography variant="body1" sx={{ maxWidth: 600, mx: 'auto' }}>
           記事を読む前に以下のポイントにご注意ください：
         </Typography>
-        <Box component="ul" sx={{ mt: 2, textAlign: 'left', maxWidth: 600, mx: 'auto', pl: 2 }}>
+        <Box
+          component="ul"
+          sx={{ mt: 2, textAlign: 'left', maxWidth: 600, mx: 'auto', pl: 2 }}
+        >
           <Typography component="li" variant="body2">
             記事内の情報は執筆時点のものです。
           </Typography>
@@ -59,9 +80,14 @@ const HomePage: React.FC<{ posts: Post[] }> = ({ posts }) => (
           </Typography>
           <Typography component="li" variant="body2">
             不明点や追加情報は
-              <Link href="https://x.com/rei_fine_" target="_blank" rel="noopener noreferrer" underline="hover">
-                作者Twitter
-              </Link>
+            <Link
+              href="https://x.com/rei_fine_"
+              target="_blank"
+              rel="noopener noreferrer"
+              underline="hover"
+            >
+              作者Twitter
+            </Link>
             までご連絡ください。
           </Typography>
         </Box>
@@ -75,42 +101,59 @@ const HomePage: React.FC<{ posts: Post[] }> = ({ posts }) => (
           まだ記事が投稿されていません。
         </Typography>
       ) : (
-        <Grid container spacing={4}>
-            {posts.map((post) => (
-              <Grid key={post.slug} xs={12} sm={6} md={4}>
-                <Card
-                  sx={{
-                    width: '100%',
-                    height: '100%',
-                    transition: 'transform 0.3s, box-shadow 0.3s',
-                    '&:hover': {
-                      transform: 'translateY(-8px)',
-                      boxShadow: 6,
-                    },
-                  }}
-                >
-                  <CardActionArea component={Link} href={`/articles/${post.slug}` as any}>
-                    <CardContent>
-                      <Typography variant="h5" component="h2" gutterBottom sx={{ fontWeight: 600 }}>
-                        {post.title}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                        更新日：{post.date}
-                      </Typography>
-                      <Typography variant="body1" noWrap>
-                        {post.excerpt}
-                      </Typography>
-                    </CardContent>
-                  </CardActionArea>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
+        <Box
+          component="section"
+          sx={{
+            display: 'grid',
+            // auto-fit + minmax で、カード数が1つでも幅いっぱいに伸びるように
+            gridTemplateColumns: {
+              xs: '1fr',
+              sm: 'repeat(auto-fit, minmax(280px, 1fr))',
+            },
+            gap: 4,
+          }}
+        >
+          {posts.map((post) => (
+            <Card
+              key={post.slug}
+              sx={{
+                width: '100%',
+                height: '100%',
+                transition: 'transform 0.3s, box-shadow 0.3s',
+                '&:hover': {
+                  transform: 'translateY(-8px)',
+                  boxShadow: 6,
+                },
+              }}
+            >
+              <CardActionArea href={`/articles/${post.slug}`} component={Link}>
+                <CardContent>
+                  <Typography
+                    variant="h5"
+                    component="h2"
+                    gutterBottom
+                    sx={{ fontWeight: 600 }}
+                  >
+                    {post.title}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mb: 2 }}
+                  >
+                    更新日：{post.date}
+                  </Typography>
+                  <Typography variant="body1" noWrap>
+                    {post.excerpt}
+                  </Typography>
+                </CardContent>
+              </CardActionArea>
+            </Card>
+          ))}
+        </Box>
       )}
     </Container>
   </Layout>
-)
+);
 
-export default HomePage
-
-
+export default HomePage;

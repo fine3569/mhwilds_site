@@ -14,6 +14,7 @@
     "@mdx-js/loader": "^3.1.0",
     "@mui/icons-material": "^7.0.2",
     "@mui/material": "^7.0.2",
+    "@mui/styled-engine-sc": "^7.0.2",
     "@mui/x-date-pickers": "^8.1.0",
     "@next/mdx": "^15.3.1",
     "dayjs": "^1.11.13",
@@ -28,7 +29,8 @@
     "react-dom": "^19.0.0",
     "react-markdown": "^10.1.0",
     "rehype-raw": "^7.0.0",
-    "slugify": "^1.6.6"
+    "slugify": "^1.6.6",
+    "styled-components": "^6.1.17"
   },
   "devDependencies": {
     "@types/formidable": "^3.4.5",
