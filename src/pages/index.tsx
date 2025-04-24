@@ -77,7 +77,7 @@ const HomePage: React.FC<{ posts: Post[] }> = ({ posts }) => (
       ) : (
         <Grid container spacing={4}>
             {posts.map((post) => (
-              <Grid item key={post.slug} xs={12} sm={6} md={4}>
+              <Grid key={post.slug} xs={12} sm={6} md={4}>
                 <Card
                   sx={{
                     width: '100%',

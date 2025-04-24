@@ -176,7 +176,7 @@ export default function ArticleManagerPage() {
           {editingSlug ? '記事を編集' : '記事を管理'}
         </Typography>
         <Grid container spacing={2}>
-          <Grid item xs={6}>
+          <Grid xs={6}>
             <Paper sx={{ p: 3, mb: 4, h: 12 }} elevation={1}>
               <Box component="form" noValidate autoComplete="off" sx={{ display: 'grid', gap: 2 }}>
                 <TextField
@@ -230,7 +230,7 @@ export default function ArticleManagerPage() {
             </Paper>
           </Grid>
 
-          <Grid item xs={6}>
+          <Grid xs={6}>
             <Paper sx={{ p: 2 }} variant="outlined">
               <Typography variant="h6" gutterBottom>
                 プレビュー
@@ -248,12 +248,12 @@ export default function ArticleManagerPage() {
         <Grid container spacing={2}>
           {loadingList
             ? [1, 2, 3].map(i => (
-                <Grid item xs={12} key={i}>
+                <Grid xs={12} key={i}>
                   <Skeleton variant="rectangular" height={60} />
                 </Grid>
               ))
             : articles.map(a => (
-                <Grid item xs={12} sm={6} key={a.slug}>
+                <Grid xs={12} sm={6} key={a.slug}>
                   <Paper sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center'} }>
                     <Box>
                       <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>{a.title}</Typography>
