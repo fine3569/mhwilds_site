@@ -46,7 +46,7 @@ const HomePage: React.FC<{ posts: Post[] }> = ({ posts }) => (
     <Container maxWidth="md" sx={{ mb: 6 }}>
       <Box
         sx={{
-          bgcolor: 'HeroSection',
+          bgcolor: 'background.paper',
           py: { xs: 3, md: 6 },
           px: { xs: 2, md: 3 },
           borderRadius: 1,
@@ -142,9 +142,6 @@ const HomePage: React.FC<{ posts: Post[] }> = ({ posts }) => (
                     sx={{ mb: 2 }}
                   >
                     更新日：{post.date}
-                  </Typography>
-                  <Typography variant="body1" noWrap>
-                    {post.excerpt}
                   </Typography>
                 </CardContent>
               </CardActionArea>

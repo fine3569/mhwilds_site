@@ -17,6 +17,7 @@ export const getDesignTokens = (mode: 'light' | 'dark'): ThemeOptions => ({
       default: mode === 'dark' ? grey[900] : grey[100],
       // Card や Paper の背景
       paper: mode === 'dark' ? grey[800] : '#ffffff',
+      
     },
   },
   typography: {

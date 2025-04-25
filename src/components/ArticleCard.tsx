@@ -24,9 +24,6 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({ post }) => (
         <Typography variant="caption" color="text.secondary" display="block" gutterBottom>
           {post.date}
         </Typography>
-        <Typography variant="body2" noWrap>
-          {post.excerpt}
-        </Typography>
       </CardContent>
     </CardActionArea>
   </Card>
