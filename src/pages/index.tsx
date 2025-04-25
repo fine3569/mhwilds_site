@@ -117,12 +117,13 @@ const HomePage: React.FC<{ posts: Post[] }> = ({ posts }) => (
             <Card
               key={post.slug}
               sx={{
-                width: '100%',
-                height: '100%',
-                transition: 'transform 0.3s, box-shadow 0.3s',
+                border: (theme) => `1px solid ${theme.palette.grey[300]}`,
+                borderRadius: 3,
+                transition: 'all 0.2s ease',
                 '&:hover': {
-                  transform: 'translateY(-8px)',
-                  boxShadow: 6,
+                  transform: 'translateY(-4px)',
+                  boxShadow: 4,
+                  borderColor: 'primary.main',
                 },
               }}
             >
