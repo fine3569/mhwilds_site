@@ -17,6 +17,7 @@ import rehypeRaw from 'rehype-raw';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import { Layout } from '@/src/components/Layout';
+import { MdxContainer } from '@/src/components/MdxContainer';
 
 interface ArticleMeta {
   slug: string;
@@ -184,7 +185,6 @@ export default function ArticleManagerPage() {
           {editingSlug ? '記事を編集' : '記事を管理'}
         </Typography>
 
-        {/* フォームとプレビューを2カラムに */}
         <Box
           component="section"
           sx={{
@@ -195,12 +195,7 @@ export default function ArticleManagerPage() {
           }}
         >
           <Paper sx={{ p: 3 }} elevation={1}>
-            <Box
-              component="form"
-              noValidate
-              autoComplete="off"
-              sx={{ display: 'grid', gap: 2 }}
-            >
+            <Box component="form" noValidate autoComplete="off" sx={{ display: 'grid', gap: 2 }}>
               <TextField
                 label="slug"
                 value={slug}
@@ -209,12 +204,7 @@ export default function ArticleManagerPage() {
                 fullWidth
                 disabled={Boolean(editingSlug)}
               />
-              <TextField
-                label="タイトル"
-                value={title}
-                onChange={e => setTitle(e.target.value)}
-                fullWidth
-              />
+              <TextField label="タイトル" value={title} onChange={e => setTitle(e.target.value)} fullWidth />
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DatePicker
                   label="日付"
@@ -226,19 +216,10 @@ export default function ArticleManagerPage() {
                 />
               </LocalizationProvider>
               <Box>
-                <Button
-                  variant="outlined"
-                  onClick={() => fileInputRef.current?.click()}
-                >
+                <Button variant="outlined" onClick={() => fileInputRef.current?.click()}>
                   画像を挿入
                 </Button>
-                <input
-                  type="file"
-                  accept="image/*"
-                  hidden
-                  ref={fileInputRef}
-                  onChange={handleImageUpload}
-                />
+                <input type="file" accept="image/*" hidden ref={fileInputRef} onChange={handleImageUpload} />
               </Box>
               <TextField
                 label="本文 (MDX)"
@@ -255,24 +236,12 @@ export default function ArticleManagerPage() {
                     キャンセル
                   </Button>
                 )}
-                <Button
-                  variant="contained"
-                  onClick={handleSubmit}
-                  disabled={saving}
-                >
-                  {saving
-                    ? '保存中…'
-                    : editingSlug
-                    ? '更新する'
-                    : '新規作成'}
+                <Button variant="contained" onClick={handleSubmit} disabled={saving}>
+                  {saving ? '保存中…' : editingSlug ? '更新する' : '新規作成'}
                 </Button>
               </Box>
               {message && (
-                <Typography
-                  color={isSuccess ? 'success.main' : 'error.main'}
-                >
-                  {message}
-                </Typography>
+                <Typography color={isSuccess ? 'success.main' : 'error.main'}>{message}</Typography>
               )}
             </Box>
           </Paper>
@@ -281,23 +250,12 @@ export default function ArticleManagerPage() {
             <Typography variant="h6" gutterBottom>
               プレビュー
             </Typography>
-            <Box
-              sx={{
-                '& img': { maxWidth: '100%', borderRadius: 1, boxShadow: 1 },
-                '& h2': { mt: 2, mb: 1 },
-              }}
-            >
-              <ReactMarkdown
-                rehypePlugins={[rehypeRaw]}
-                children={
-                  content || '_ここにMDXを入力すると表示されます_'
-                }
-              />
-            </Box>
+            <MdxContainer>
+              <ReactMarkdown rehypePlugins={[rehypeRaw]} children={content || '_ここにMDXを入力すると表示されます_'} />
+            </MdxContainer>
           </Paper>
         </Box>
 
-        {/* 既存記事一覧 */}
         <Typography variant="h5" gutterBottom sx={{ fontWeight: 600 }}>
           既存の記事一覧
         </Typography>
@@ -312,36 +270,20 @@ export default function ArticleManagerPage() {
         >
           {loadingList
             ? [1, 2, 3].map(i => (
-                <Skeleton
-                  key={i}
-                  variant="rectangular"
-                  height={60}
-                  width="100%"
-                />
+                <Skeleton key={i} variant="rectangular" height={60} width="100%" />
               ))
             : articles.map(a => (
                 <Paper
                   key={a.slug}
                   variant="outlined"
-                  sx={{
-                    p: 2,
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                  }}
+                  sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
                 >
                   <Box>
-                    <Typography
-                      variant="subtitle1"
-                      sx={{ fontWeight: 500 }}
-                    >
-                      {a.title}
+                    <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
+                      {a.title}                
                     </Typography>
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                    >
-                      {a.date}
+                    <Typography variant="caption" color="text.secondary">
+                      {a.date}                  
                     </Typography>
                   </Box>
                   <Box>
