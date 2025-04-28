@@ -1,5 +1,5 @@
 // src/pages/new-article.tsx
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, KeyboardEvent } from 'react';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Skeleton from '@mui/material/Skeleton';
@@ -18,6 +18,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import { Layout } from '@/src/components/Layout';
 import { MdxContainer } from '@/src/components/MdxContainer';
+import { Popper, List, ListItemButton, ListItemText } from '@mui/material';
 
 interface ArticleMeta {
   slug: string;
@@ -43,6 +44,15 @@ export default function ArticleManagerPage() {
 
   const contentRef = useRef<HTMLTextAreaElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // スラッシュコマンド用ステート
+  const [slashOpen, setSlashOpen] = useState(false);
+  const [slashAnchorEl, setSlashAnchorEl] = useState<HTMLElement | null>(null);
+  const [slashPosition, setSlashPosition] = useState<number>(0);
+  const commands = [
+    { label: '改行(<br />)', insert: '<br />' },
+    { label: 'コードブロック挿入', insert: '```ini\n\n```' },
+  ];
 
   useEffect(() => {
     (async () => {
@@ -178,6 +188,21 @@ export default function ArticleManagerPage() {
     }
   };
 
+  // キーハンドラ：‘/’ が押されたらメニューを開く
+  const handleKeyDown: React.KeyboardEventHandler<HTMLDivElement> = (e) => {
+    if (e.key === '/' && contentRef.current) {
+      const textarea = contentRef.current;
+      const pos = textarea.selectionStart;
+      setSlashPosition(pos);
+      setSlashAnchorEl(textarea);
+      setSlashOpen(true);
+      e.preventDefault();
+    }
+    if (e.key === 'Escape' && slashOpen) {
+      setSlashOpen(false);
+    }
+  };
+
   return (
     <Layout>
       <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -221,15 +246,51 @@ export default function ArticleManagerPage() {
                 </Button>
                 <input type="file" accept="image/*" hidden ref={fileInputRef} onChange={handleImageUpload} />
               </Box>
-              <TextField
-                label="本文 (MDX)"
-                multiline
-                minRows={8}
-                value={content}
-                onChange={e => setContent(e.target.value)}
-                fullWidth
-                inputRef={contentRef}
-              />
+                <Box sx={{ position: 'relative' }}>
+                <TextField
+                  label="本文 (MDX)"
+                  multiline
+                  minRows={8}
+                  value={content}
+                  onChange={e => setContent(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  fullWidth
+                  inputRef={contentRef}
+                />
+
+                <Popper
+                  open={slashOpen}
+                  anchorEl={slashAnchorEl}
+                  placement="bottom-start"
+                  style={{ zIndex: 1300 }}
+                >
+                  <Paper elevation={3}>
+                    <List dense>
+                      {commands.map((cmd, i) => (
+                        <ListItemButton
+                          key={i}
+                          onClick={() => {
+                            const before = content.slice(0, slashPosition);
+                            const after  = content.slice(slashPosition);
+                            setContent(before + cmd.insert + after);
+                            setSlashOpen(false);
+                            setTimeout(() => {
+                              if (contentRef.current) {
+                                const newPos = slashPosition + cmd.insert.length;
+                                contentRef.current.selectionStart = newPos;
+                                contentRef.current.selectionEnd   = newPos;
+                                contentRef.current.focus();
+                              }
+                            });
+                          }}
+                        >
+                          <ListItemText primary={cmd.label} />
+                        </ListItemButton>
+                      ))}
+                    </List>
+                  </Paper>
+                </Popper>
+              </Box>
               <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
                 {editingSlug && (
                   <Button onClick={handleCancelEdit} disabled={saving}>
