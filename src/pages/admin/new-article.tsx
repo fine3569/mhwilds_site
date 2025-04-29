@@ -1,4 +1,3 @@
-// src/pages/new-article.tsx
 import React, { useState, useRef, useEffect, KeyboardEvent } from 'react';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
@@ -45,15 +44,47 @@ export default function ArticleManagerPage() {
   const contentRef = useRef<HTMLTextAreaElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  // スラッシュコマンド用ステート
-  const [slashOpen, setSlashOpen] = useState(false);
-  const [slashAnchorEl, setSlashAnchorEl] = useState<HTMLElement | null>(null);
-  const [slashPosition, setSlashPosition] = useState<number>(0);
-  const commands = [
-    { label: '改行(<br />)', insert: '<br />' },
-    { label: 'コードブロック挿入', insert: '```ini\n\n```' },
-  ];
+  // --- 共通: 画像アップロード＋挿入 ---
+  const insertImageFile = async (file: File) => {
+    const form = new FormData();
+    form.append('image', file);
+    try {
+      const res = await fetch('/api/upload', { method: 'POST', body: form });
+      if (!res.ok) throw new Error('Upload failed');
+      const { url } = await res.json();
+      const alt = file.name;
+      const textarea = contentRef.current!;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const before = content.slice(0, start);
+      const after = content.slice(end);
+      const mdImg = `![${alt}](${url})`;
+      setContent(before + mdImg + after);
+      setTimeout(() => {
+        textarea.focus();
+        const pos = start + mdImg.length;
+        textarea.selectionStart = textarea.selectionEnd = pos;
+      });
+    } catch {
+      alert('画像アップロードに失敗しました');
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
 
+  // --- Paste された画像を検知 ---
+  const handlePaste: React.ClipboardEventHandler<HTMLDivElement> = e => {
+    for (const item of Array.from(e.clipboardData.items)) {
+      if (item.kind === 'file' && item.type.startsWith('image/')) {
+        e.preventDefault();
+        const file = item.getAsFile()!;
+        insertImageFile(file);
+        break;
+      }
+    }
+  };
+
+  // 記事一覧取得
   useEffect(() => {
     (async () => {
       try {
@@ -68,9 +99,12 @@ export default function ArticleManagerPage() {
     })();
   }, []);
 
+  // 編集
   const handleEdit = async (slugToEdit: string) => {
     try {
-      const res = await fetch(`/api/articles?slug=${encodeURIComponent(slugToEdit)}`);
+      const res = await fetch(
+        `/api/articles?slug=${encodeURIComponent(slugToEdit)}`
+      );
       const result = await res.json();
       if (!res.ok) throw new Error((result as any).error || '読み込み失敗');
       const data = result as ArticleDetail;
@@ -86,6 +120,7 @@ export default function ArticleManagerPage() {
     }
   };
 
+  // キャンセル
   const handleCancelEdit = () => {
     setEditingSlug(null);
     setSlug('');
@@ -96,37 +131,7 @@ export default function ArticleManagerPage() {
     setIsSuccess(null);
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const form = new FormData();
-    form.append('image', file);
-    try {
-      const res = await fetch('/api/upload', { method: 'POST', body: form });
-      if (!res.ok) throw new Error('Upload failed');
-      const data = await res.json();
-      const url = data.url as string;
-      const alt = file.name;
-      const start = contentRef.current?.selectionStart ?? content.length;
-      const end = contentRef.current?.selectionEnd ?? content.length;
-      const before = content.slice(0, start);
-      const after = content.slice(end);
-      const mdImg = `![${alt}](${url})`;
-      setContent(before + mdImg + after);
-      setTimeout(() => {
-        if (contentRef.current) {
-          contentRef.current.focus();
-          const pos = start + mdImg.length;
-          contentRef.current.selectionStart = contentRef.current.selectionEnd = pos;
-        }
-      });
-    } catch {
-      alert('画像アップロードに失敗しました');
-    } finally {
-      if (fileInputRef.current) fileInputRef.current.value = '';
-    }
-  };
-
+  // 新規 or 更新
   const handleSubmit = async () => {
     if (!slug.trim() || !title.trim() || !date) {
       setMessage('slug, タイトル, 日付は必須です');
@@ -172,6 +177,7 @@ export default function ArticleManagerPage() {
     }
   };
 
+  // 削除
   const handleDelete = async (slugToDelete: string) => {
     if (!confirm(`記事「${slugToDelete}」を削除しますか？`)) return;
     try {
@@ -188,8 +194,16 @@ export default function ArticleManagerPage() {
     }
   };
 
-  // キーハンドラ：‘/’ が押されたらメニューを開く
-  const handleKeyDown: React.KeyboardEventHandler<HTMLDivElement> = (e) => {
+  // スラッシュコマンド用
+  const [slashOpen, setSlashOpen] = useState(false);
+  const [slashAnchorEl, setSlashAnchorEl] = useState<HTMLElement | null>(null);
+  const [slashPosition, setSlashPosition] = useState<number>(0);
+  const commands = [
+    { label: '改行(<br />)', insert: '<br />' },
+    { label: 'コードブロック挿入', insert: '```ini\n\n```' },
+  ];
+
+  const handleKeyDown: React.KeyboardEventHandler<HTMLDivElement> = e => {
     if (e.key === '/' && contentRef.current) {
       const textarea = contentRef.current;
       const pos = textarea.selectionStart;
@@ -240,13 +254,8 @@ export default function ArticleManagerPage() {
                   slotProps={{ textField: { fullWidth: true } }}
                 />
               </LocalizationProvider>
-              <Box>
-                <Button variant="outlined" onClick={() => fileInputRef.current?.click()}>
-                  画像を挿入
-                </Button>
-                <input type="file" accept="image/*" hidden ref={fileInputRef} onChange={handleImageUpload} />
-              </Box>
-                <Box sx={{ position: 'relative' }}>
+
+              <Box sx={{ position: 'relative' }}>
                 <TextField
                   label="本文 (MDX)"
                   multiline
@@ -254,6 +263,7 @@ export default function ArticleManagerPage() {
                   value={content}
                   onChange={e => setContent(e.target.value)}
                   onKeyDown={handleKeyDown}
+                  onPaste={handlePaste}
                   fullWidth
                   inputRef={contentRef}
                 />
@@ -271,7 +281,7 @@ export default function ArticleManagerPage() {
                           key={i}
                           onClick={() => {
                             const before = content.slice(0, slashPosition);
-                            const after  = content.slice(slashPosition);
+                            const after = content.slice(slashPosition);
                             setContent(before + cmd.insert + after);
                             setSlashOpen(false);
                             setTimeout(() => {
@@ -291,7 +301,16 @@ export default function ArticleManagerPage() {
                   </Paper>
                 </Popper>
               </Box>
-              <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+
+              {/* アクションボタン群 */}
+              <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 2 }}>
+                <Button
+                  variant="outlined"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={saving}
+                >
+                  画像を挿入
+                </Button>
                 {editingSlug && (
                   <Button onClick={handleCancelEdit} disabled={saving}>
                     キャンセル
@@ -301,8 +320,21 @@ export default function ArticleManagerPage() {
                   {saving ? '保存中…' : editingSlug ? '更新する' : '新規作成'}
                 </Button>
               </Box>
+              <input
+                type="file"
+                accept="image/*"
+                hidden
+                ref={fileInputRef}
+                onChange={e => {
+                  const file = e.target.files?.[0];
+                  if (file) insertImageFile(file);
+                }}
+              />
+
               {message && (
-                <Typography color={isSuccess ? 'success.main' : 'error.main'}>{message}</Typography>
+                <Typography color={isSuccess ? 'success.main' : 'error.main'}>
+                  {message}
+                </Typography>
               )}
             </Box>
           </Paper>
@@ -312,7 +344,10 @@ export default function ArticleManagerPage() {
               プレビュー
             </Typography>
             <MdxContainer>
-              <ReactMarkdown rehypePlugins={[rehypeRaw]} children={content || '_ここにMDXを入力すると表示されます_'} />
+              <ReactMarkdown
+                rehypePlugins={[rehypeRaw]}
+                children={content || '_ここにMDXを入力すると表示されます_'}
+              />
             </MdxContainer>
           </Paper>
         </Box>
@@ -341,10 +376,10 @@ export default function ArticleManagerPage() {
                 >
                   <Box>
                     <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
-                      {a.title}                
+                      {a.title}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                      {a.date}                  
+                      {a.date}
                     </Typography>
                   </Box>
                   <Box>
